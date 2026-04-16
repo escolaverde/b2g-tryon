@@ -62,7 +62,7 @@ async def run_tryon_replicate(
         "dresses": "dresses",
     }
 
-    # Build Replicate prediction request
+    # Build Replicate prediction request (matches cuuupid/idm-vton schema)
     payload = {
         "version": REPLICATE_MODEL,
         "input": {
@@ -70,12 +70,10 @@ async def run_tryon_replicate(
             "garm_img": garment_uri,
             "garment_des": f"a photo of a {category.replace('_', ' ')} garment",
             "category": garment_type_map.get(category, "upper_body"),
-            "num_inference_steps": num_steps,
-            "guidance_scale": guidance_scale,
+            "steps": num_steps,
             "seed": seed,
-            "is_checked": True,
-            "is_checked_crop": False,
-            "denoise_steps": num_steps,
+            "crop": True,
+            "force_dc": category == "dresses",
         },
     }
 

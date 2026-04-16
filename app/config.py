@@ -26,7 +26,7 @@ INFERENCE_BACKEND = os.getenv("INFERENCE_BACKEND", "replicate")  # replicate | l
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN", "")
 REPLICATE_MODEL = os.getenv(
     "REPLICATE_MODEL",
-    "cuuupid/idm-vton:c871bb9b046607b680f36e8ccc80d1683456e7b4880b0867f47ddc3ba5395e8d",
+    "0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985",
 )
 
 # Local GPU (requires NVIDIA GPU with ≥16GB VRAM)

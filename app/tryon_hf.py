@@ -24,6 +24,45 @@ SPACES = [
 _clients = {}
 
 
+def _try_predict(client, person_path, garment_path, garment_desc, num_steps, seed):
+    """Try different input formats for compatibility across spaces."""
+    person_file = handle_file(person_path)
+    garment_file = handle_file(garment_path)
+
+    # Format 1: ImageEditor dict (newer spaces)
+    try:
+        return client.predict(
+            dict(background=person_file, layers=[], composite=None),
+            garment_file,
+            garment_desc,
+            True, True, num_steps, seed,
+            api_name="/tryon",
+        )
+    except (AttributeError, TypeError):
+        pass
+
+    # Format 2: Simple file handle (older spaces)
+    try:
+        return client.predict(
+            person_file,
+            garment_file,
+            garment_desc,
+            True, True, num_steps, seed,
+            api_name="/tryon",
+        )
+    except (AttributeError, TypeError):
+        pass
+
+    # Format 3: With explicit image editor format
+    return client.predict(
+        {"background": person_file, "layers": None, "composite": None},
+        garment_file,
+        garment_desc,
+        True, True, num_steps, seed,
+        api_name="/tryon",
+    )
+
+
 def get_client(space: str) -> Client:
     if space not in _clients:
         logger.info(f"Connecting to HuggingFace Space: {space}")
@@ -71,16 +110,8 @@ async def run_tryon_hf(
                 loop = asyncio.get_event_loop()
                 result = await loop.run_in_executor(
                     None,
-                    lambda c=client: c.predict(
-                        dict(background=handle_file(person_path), layers=[], composite=None),
-                        handle_file(garment_path),
-                        category_desc.get(category, "A garment"),
-                        True,   # is_checked
-                        True,   # is_checked_crop
-                        num_steps,
-                        seed,
-                        api_name="/tryon",
-                    )
+                    lambda c=client: _try_predict(c, person_path, garment_path,
+                        category_desc.get(category, "A garment"), num_steps, seed),
                 )
 
                 if isinstance(result, (list, tuple)):

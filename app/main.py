@@ -126,16 +126,11 @@ async def create_tryon(
     save_upload(person_bytes, ".jpg")
     save_upload(garment_bytes, ".jpg")
 
-    # Preprocess images for better results
-    from app.preprocess import preprocess_person, preprocess_garment
-    person_img = preprocess_person(person_img)
-    garment_img = preprocess_garment(garment_img, remove_bg=True)
-
     # Create job
     job_id = uuid.uuid4().hex[:12]
     jobs[job_id] = {"status": "processing", "result": None, "error": None}
 
-    # Run inference in background
+    # Run preprocessing + inference in background
     asyncio.create_task(_run_tryon_async(
         job_id, person_img, garment_img, category, num_steps, guidance_scale,
     ))
@@ -191,10 +186,6 @@ async def create_tryon_sync(
     except Exception:
         raise HTTPException(400, "Invalid image format")
 
-    from app.preprocess import preprocess_person, preprocess_garment
-    person_img = preprocess_person(person_img)
-    garment_img = preprocess_garment(garment_img, remove_bg=True)
-
     job_id = uuid.uuid4().hex[:12]
     jobs[job_id] = {"status": "processing", "result": None, "error": None}
 
@@ -223,8 +214,14 @@ async def _run_tryon_async(
     num_steps: int,
     guidance_scale: float,
 ):
-    """Route inference to the configured backend."""
+    """Preprocess images and route inference to the configured backend."""
     try:
+        # Preprocess in background (rembg can take 10-20s on first run)
+        from app.preprocess import preprocess_person, preprocess_garment
+        loop = asyncio.get_event_loop()
+        person_img = await loop.run_in_executor(executor, preprocess_person, person_img)
+        garment_img = await loop.run_in_executor(executor, preprocess_garment, garment_img, True)
+
         if INFERENCE_BACKEND == "huggingface":
             result_path = await _run_huggingface(
                 person_img, garment_img, category, num_steps, guidance_scale,

@@ -101,8 +101,8 @@ async def create_tryon(
     person: UploadFile = File(..., description="Photo of the person"),
     garment: UploadFile = File(..., description="Photo of the garment"),
     category: str = Form("upper_body", description="upper_body | lower_body | dresses"),
-    num_steps: int = Form(30, ge=10, le=50),
-    guidance_scale: float = Form(2.0, ge=1.0, le=5.0),
+    num_steps: int = Form(50, ge=10, le=50),
+    guidance_scale: float = Form(3.5, ge=1.0, le=5.0),
 ):
     """Submit a virtual try-on job."""
 
@@ -174,8 +174,8 @@ async def create_tryon_sync(
     person: UploadFile = File(...),
     garment: UploadFile = File(...),
     category: str = Form("upper_body"),
-    num_steps: int = Form(30, ge=10, le=50),
-    guidance_scale: float = Form(2.0, ge=1.0, le=5.0),
+    num_steps: int = Form(50, ge=10, le=50),
+    guidance_scale: float = Form(3.5, ge=1.0, le=5.0),
 ):
     """Synchronous try-on — waits for result."""
     try:

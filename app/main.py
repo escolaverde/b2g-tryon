@@ -126,6 +126,11 @@ async def create_tryon(
     save_upload(person_bytes, ".jpg")
     save_upload(garment_bytes, ".jpg")
 
+    # Preprocess images for better results
+    from app.preprocess import preprocess_person, preprocess_garment
+    person_img = preprocess_person(person_img)
+    garment_img = preprocess_garment(garment_img, remove_bg=True)
+
     # Create job
     job_id = uuid.uuid4().hex[:12]
     jobs[job_id] = {"status": "processing", "result": None, "error": None}
@@ -185,6 +190,10 @@ async def create_tryon_sync(
         garment_img = Image.open(BytesIO(garment_bytes)).convert("RGB")
     except Exception:
         raise HTTPException(400, "Invalid image format")
+
+    from app.preprocess import preprocess_person, preprocess_garment
+    person_img = preprocess_person(person_img)
+    garment_img = preprocess_garment(garment_img, remove_bg=True)
 
     job_id = uuid.uuid4().hex[:12]
     jobs[job_id] = {"status": "processing", "result": None, "error": None}

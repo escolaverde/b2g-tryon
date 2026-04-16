@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 
 # Spaces to try in order (fallback on rate limit)
 SPACES = [
-    os.getenv("HF_SPACE", "yisol/IDM-VTON"),
+    os.getenv("HF_SPACE", "carlorodovalho/IDM-VTON"),
+    "yisol/IDM-VTON",
     "ronniechoyy/IDM-VTON-20250428",
-    "jjlealse/IDM-VTON",
 ]
 
 _clients = {}

@@ -65,8 +65,9 @@ def _try_predict(client, person_path, garment_path, garment_desc, num_steps, see
 
 def get_client(space: str) -> Client:
     if space not in _clients:
-        logger.info(f"Connecting to HuggingFace Space: {space}")
-        _clients[space] = Client(space)
+        hf_token = os.getenv("HF_TOKEN", "")
+        logger.info(f"Connecting to HuggingFace Space: {space} (auth={'yes' if hf_token else 'no'})")
+        _clients[space] = Client(space, hf_token=hf_token or None)
     return _clients[space]
 
 

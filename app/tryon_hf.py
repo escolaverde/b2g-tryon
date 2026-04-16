@@ -16,10 +16,9 @@ logger = logging.getLogger(__name__)
 
 # Spaces to try in order (fallback on rate limit)
 SPACES = [
-    os.getenv("HF_SPACE", "kadirnar/IDM-VTON"),
-    "yisol/IDM-VTON",
+    os.getenv("HF_SPACE", "yisol/IDM-VTON"),
+    "ronniechoyy/IDM-VTON-20250428",
     "jjlealse/IDM-VTON",
-    "LPDoctor/IDM-VTON-demo",
 ]
 
 _clients = {}
@@ -97,15 +96,16 @@ async def run_tryon_hf(
                 error_str = str(e)
                 logger.warning(f"Space {space} failed: {error_str}")
 
-                # If rate limited or unavailable, try next space
-                if "429" in error_str or "503" in error_str or "exceeded" in error_str.lower():
-                    # Clear cached client so it reconnects next time
-                    _clients.pop(space, None)
+                # Clear cached client so it reconnects next time
+                _clients.pop(space, None)
+
+                # If rate limited, paused, or unavailable, try next space
+                recoverable = ["429", "503", "exceeded", "paused", "invalid state", "runtime_error"]
+                if any(keyword in error_str.lower() for keyword in recoverable):
                     await asyncio.sleep(2)
                     continue
 
                 # For other errors, also try next space
-                _clients.pop(space, None)
                 continue
 
         raise RuntimeError(f"All spaces failed. Last error: {last_error}")

@@ -216,7 +216,18 @@ async def _run_tryon_async(
 ):
     """Route inference to the configured backend."""
     try:
-        if INFERENCE_BACKEND == "replicate":
+        if INFERENCE_BACKEND == "huggingface":
+            result_path = await _run_huggingface(
+                person_img, garment_img, category, num_steps, guidance_scale,
+            )
+            # Copy result to our results dir and serve it
+            from app.storage import save_result
+            from PIL import Image as PILImage
+            result_image = PILImage.open(result_path)
+            filename = save_result(result_image, job_id)
+            result_url = get_result_url(filename)
+            jobs[job_id] = {"status": "completed", "result": result_url, "error": None}
+        elif INFERENCE_BACKEND == "replicate":
             result_url = await _run_replicate(
                 person_img, garment_img, category, num_steps, guidance_scale,
             )
@@ -235,6 +246,21 @@ async def _run_tryon_async(
     except Exception as e:
         logger.error(f"Job {job_id} failed: {e}")
         jobs[job_id] = {"status": "error", "result": None, "error": str(e)}
+
+
+async def _run_huggingface(
+    person_img, garment_img, category, num_steps, guidance_scale,
+) -> str:
+    """Run try-on via HuggingFace Space (FREE)."""
+    from app.tryon_hf import run_tryon_hf
+
+    return await run_tryon_hf(
+        person_image=person_img,
+        garment_image=garment_img,
+        category=category,
+        num_steps=num_steps,
+        guidance_scale=guidance_scale,
+    )
 
 
 async def _run_replicate(
@@ -272,6 +298,8 @@ def _run_local_tryon(
 
 
 def _check_gpu() -> dict:
+    if INFERENCE_BACKEND == "huggingface":
+        return {"backend": "huggingface", "available": True, "cost": "free"}
     if INFERENCE_BACKEND == "replicate":
         return {"backend": "replicate", "available": True}
     try:

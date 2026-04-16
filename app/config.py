@@ -20,7 +20,7 @@ MAX_IMAGE_SIZE_MB = int(os.getenv("MAX_IMAGE_SIZE_MB", "10"))
 RESULT_TTL_HOURS = int(os.getenv("RESULT_TTL_HOURS", "24"))
 
 # --- Inference Backend ---
-INFERENCE_BACKEND = os.getenv("INFERENCE_BACKEND", "replicate")  # replicate | local
+INFERENCE_BACKEND = os.getenv("INFERENCE_BACKEND", "huggingface")  # huggingface | replicate | local
 
 # Replicate (cloud GPU — no local GPU needed)
 REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN", "")
